@@ -1,9 +1,9 @@
 Flask==3.1.1
 Werkzeug==3.0.1  # Flask 核心依赖
 Click==8.1.7  # Flask CLI 依赖
-Blinker==1.8.2  # Flask signals 依赖 
+Blinker==1.9.2  # Flask signals 依赖 
 itsdangerous==2.2.0  # Flask sessions (最新兼容版)
-Jinja2==3.1.4  # Flask templates (预防错误)
+# Jinja2==3.1.4  # Flask templates (预防错误)
 Flask-Session==0.8.0
 redis==6.4.0
 gunicorn==21.2.0
