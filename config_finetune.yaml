@@ -1,0 +1,44 @@
+batch_size: 32                 # batch size
+epochs: 30                  # total number of epochs
+eval_every_n_epochs: 1          # validation frequency
+#fine_tune_from: pretrained_gin  # sub directory of pre-trained model in ./ckpt  pretrained_gin
+fine_tune_from: finetune
+log_every_n_steps: 1           # print training log frequency
+fp16_precision: False           # float precision 16 (i.e. True/False)
+init_lr: 0.005        # initial learning rate for the prediction head 0.0002    改成这里了
+# init_lr 基础模型学习率
+init_base_lr: 0.00001           # initial learning rate for the base GNN encoder 0.0001
+weight_decay: 1e-5              # weight decay of Adam
+gpu: cuda:0                     # training GPU
+task_name: bonetox      # name of fine-tuning benchmark, inlcuding                                # classifications: BBBP/BACE/ClinTox/Tox21/HIV/SIDER/MUV
+                                # regressions: FreeSolv/ESOL/Lipo/qm7/qm8/qm9
+                                #  BBB/CYP1A2/CYP2C9/CYP2C19/CYP2D6/CYP3A4/HCLint/hERG_inh/P_gp_sub/Papp/RCLint/bonetox
+model_type: gin                 # GNN backbone (i.e., gin/gcn)
+model: 
+  num_layer: 5                  # number of graph conv layers  5
+  emb_dim: 300                  # embedding dimension in graph conv layers  300
+  feat_dim: 512                # output feature dimention   512
+  drop_ratio: 0.1                # dropout ratio
+  pool: mean                    # readout pooling (i.e., mean/max/add)
+  ecfp_bits: 2048
+  maccs_bits: 167
+  ap_bits: 2048
+  ext_bits: 2048
+  torsion_bits: 2048
+  avalon_bits: 1024
+  fp_hidden_dim: 512
+#  fingerprint_list: ['ecfp', 'maccs', 'ap','ext']
+
+dataset:
+  num_workers: 4                # dataloader number of workers
+  valid_size: 0.1           # ratio of validation data
+  test_size: 0.1                   # ratio of test data
+  splitting: random        # data splitting (i.e., random/scaffold/random_scaffold)
+  fingerprint_list: ['ecfp', 'maccs', 'ap', 'ext', 'torsion', 'avalon' ]
+#  [ 'ecfp', 'maccs', 'ap', 'ext', 'torsion', 'avalon' ]
+  ecfp_bits: 2048
+  maccs_bits: 167
+  ap_bits: 2048
+  ext_bits: 2048
+  torsion_bits: 2048    # 新增：TopologicalTorsion 指纹位数
+  avalon_bits: 1024    # 新增：Avalon 指纹位数
