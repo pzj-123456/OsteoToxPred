@@ -11,11 +11,11 @@ gunicorn==23.0.0
 PyYAML==6.0.2
 
 # PyTorch (CPU version, ensure installed first)
-torch==2.7.1+cpu  # Use precompiled CPU version, adjust if needed
+torch==2.7.1  # Use precompiled CPU version, adjust if needed
 
 # PyTorch Geometric (PyG) - Install after torch
-torch-scatter==2.1.0+cpu  # Precompiled for torch 2.7.1
-torch-sparse==0.6.17+cpu  # Precompiled for torch 2.7.1
+torch-scatter==2.1.0  # Precompiled for torch 2.7.1
+torch-sparse==0.6.17  # Precompiled for torch 2.7.1
 torch-geometric==2.5.2  # Precompiled, CPU-compatible
 
 # Chemistry toolkit
