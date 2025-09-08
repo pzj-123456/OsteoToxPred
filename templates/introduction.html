@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OsteoToxPred - Platform Introduction</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* 统一布局容器，侧边栏固定 */
+        .layout {
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #2d3436 0%, #636e72 100%);
+            color: white;
+            padding-top: 30px;
+            padding-left: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid #4a5f7a;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h3 {
+            color: #ecf0f1;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 1.5rem;
+        }
+
+        .sidebar-header .bone-icon {
+            font-size: 2rem;
+            color: #e74c3c;
+            margin-bottom: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .sidebar-nav {
+            padding: 0 20px;
+        }
+
+        .sidebar a {
+            color: #bdc3c7;
+            padding: 15px 20px;
+            text-decoration: none;
+            display: block;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .sidebar a:hover {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.2);
+        }
+
+        .sidebar a i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar a.active {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+            color: white;
+            box-shadow: 0 4px 15px rgba(253, 121, 168, 0.2);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .content-card {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 0;
+            border: none;
+            box-shadow: none;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* 简化功能特色 */
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 32px;
+            padding: 0;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        .feature-icon {
+            font-size: 1.8rem;
+            margin-right: 20px;
+            margin-top: 4px;
+            color: #00b894;
+            flex-shrink: 0;
+        }
+
+        .feature-content h4 {
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .feature-content p {
+            margin-bottom: 0;
+            color: #6c757d;
+            line-height: 1.6;
+        }
+
+        .highlight-box {
+            background: #fff;
+            border-left: 4px solid #e74c3c;
+            padding: 32px;
+            border-radius: 8px;
+            margin: 32px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        /* 统一间距和分割线 */
+        .section-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 48px 0;
+            border: none;
+        }
+
+        .section-title {
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        /* 优化主内容区域 */
+        .main-content {
+            margin-left: 280px;
+            padding: 40px;
+            min-height: 100vh;
+            background: #f8f9fa;
+            position: relative;
+            display: flex;
+            gap: 40px;
+        }
+
+        /* 主内容卡片样式 */
+        .main-content-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .content-header {
+            /* background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); */
+            padding: 20px 40px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .content-body {
+            display: flex;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .content-left {
+            flex: 1;
+            max-width: calc(100% - 400px);
+        }
+
+        .content-right {
+            flex: 0 0 320px;
+            position: sticky;
+            top: 40px;
+            height: fit-content;
+            max-height: calc(100vh - 80px);
+        }
+
+
+
+        /* 页面标题动画 */
+        .page-title-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .tech-tag {
+            background: #f8f9fa;
+            color: #495057;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 400;
+            border: 1px solid #e9ecef;
+            box-shadow: none;
+            transition: all 0.2s ease;
+        }
+
+        .tech-tag:hover {
+            background: #e9ecef;
+            color: #343a40;
+            transform: translateY(-1px);
+        }
+
+        .workflow-steps {
+            counter-reset: step-counter;
+        }
+
+        .workflow-step {
+            position: relative;
+            padding: 24px 0;
+            margin: 0;
+            background: transparent;
+            border-radius: 0;
+            border-left: 3px solid #00b894;
+            box-shadow: none;
+            border-top: none;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .workflow-step::before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #00b894;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* 架构图样式 */
+        .arch-diagram {
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            border: none;
+        }
+
+        .arch-diagram img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .arch-features {
+            background: transparent;
+            border-radius: 0;
+            padding: 24px 0;
+            border: none;
+        }
+
+        .arch-features li {
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        /* 右侧功能特色样式优化 */
+        .arch-features .feature-item {
+            margin-bottom: 28px;
+            padding: 16px 0;
+        }
+
+        .arch-features .feature-icon {
+            font-size: 1.6rem;
+            margin-right: 16px;
+            margin-top: 4px;
+            color: #00b894;
+        }
+
+        .arch-features .feature-content h6 {
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .arch-features .feature-content p.small {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 0;
+            color: #6c757d;
+        }
+
+        /* 右侧固定卡片样式 */
+        .right-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .right-card h4 {
+            color: #2c3e50;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f8f9fa;
+            font-size: 1.2rem;
+        }
+
+        .right-card .feature-item {
+            margin-bottom: 16px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .right-card .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .right-card .feature-icon {
+            font-size: 1.2rem;
+            margin-right: 12px;
+            color: #00b894;
+        }
+
+        .right-card .feature-content h6 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .right-card .feature-content p {
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+
+        /* 操作按钮样式 */
+        .action-buttons .btn {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .action-buttons .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .action-buttons .btn-primary {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            border: none;
+        }
+
+        .action-buttons .btn-outline-primary {
+            border: 2px solid #00b894;
+            color: #00b894;
+        }
+
+        .action-buttons .btn-outline-primary:hover {
+            background: #00b894;
+            color: white;
+        }
+
+        /* 响应式布局 */
+        @media (max-width: 992px) {
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+            }
+            .main-content {
+                padding: 20px;
+                margin-left: 0;
+            }
+            .content-body {
+                flex-direction: column;
+                gap: 30px;
+                padding: 30px;
+            }
+            .content-left {
+                max-width: 100%;
+            }
+            .content-right {
+                flex: none;
+                width: 100%;
+                position: static;
+            }
+            .content-header {
+                padding: 20px 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content-card {
+                padding: 25px;
+            }
+            .feature-card {
+                padding: 20px;
+            }
+            .page-title-icon {
+                font-size: 2.5rem !important;
+            }
+            .arch-diagram img {
+                max-height: 350px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="/">
+                    <div class="bone-icon">
+                        <i class="fas fa-bone"></i>
+                    </div>
+                    <h3>OsteoToxPred</h3>
+                    <small>Bone Toxicity Prediction Platform</small>
+                </a>
+            </div>
+            <div class="sidebar-nav">
+                <a href="/" class="{{ 'active' if page == 'home' else '' }}">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="/introduction" class="{{ 'active' if page == 'introduction' else '' }}">
+                    <i class="fas fa-info-circle"></i> Introduction
+                </a>
+                <a href="/predict" class="{{ 'active' if page == 'predict' else '' }}">
+                    <i class="fas fa-flask"></i> Prediction
+                </a>
+                <a href="/hwvlab" class="{{ 'active' if page == 'hwvlab' else '' }}">
+                    <i class="fas fa-database"></i> Dataset
+                </a>
+                <a href="/help" class="{{ 'active' if page == 'help' else '' }}">
+                    <i class="fas fa-question-circle"></i> Help
+                </a>
+            </div>
+        </aside>
+
+        <!-- 主内容区域 -->
+        <main class="main-content">
+
+            
+            <!-- 主内容卡片 -->
+            <div class="main-content-card">
+                <div class="content-header">
+                    <h1 class="text-center mb-3">
+                        <i class="fas fa-bone text-danger mb-2 d-block page-title-icon" style="font-size: 2rem;"></i>
+                        OsteoToxPred Bone Toxicity Prediction Platform                   
+                    </h1>
+                </div>
+                
+                <div class="content-body">
+                    <div class="content-left">
+                        <!-- 平台简介 - 压缩文案、拉开层级 -->
+                        <div class="highlight-box">
+                            <h4><i class="fas fa-star text-warning"></i> Platform Overview</h4>
+                            <p class="mb-3">
+                                Drug‑induced bone toxicity refers to adverse effects of certain compounds on bone metabolism, density and structure. Existing toxicity models rarely focus specifically on bone toxicity. We propose a multimodal method combining molecular fingerprints and graph‑based representations, deployed as the online platform <strong>OsteoToxPred</strong>. It achieves strong performance on bone toxicity prediction (Accuracy 0.85, AUC 0.92), outperforming multiple ML baselines. As an efficient, interpretable and easy‑to‑use tool, OsteoToxPred supports safety assessment and research, helping scientists make informed decisions.
+                            </p>
+                        </div>
+
+                        <!-- 系统与模型架构图 -->
+                        <h3 class="section-title"><i class="fas fa-project-diagram text-primary"></i> System and Model Architecture</h3>
+                        <div class="arch-diagram text-center mb-4">
+                            <img src="/static/img/model_img.png" alt="OsteoToxPred Architecture" class="img-fluid" style="max-height:500px; width: 100%;">
+                            <p class="text-muted mt-2 mb-0"><small>Diagram: Fingerprint/GNN dual branches, gated fusion and serving pipeline</small></p>
+                        </div>
+
+                        <!-- 应用场景 - 简洁列表 -->
+                        <h3 class="section-title"><i class="fas fa-lightbulb text-warning"></i> Use Cases</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-pills text-primary"></i>
+                                    </div>
+                                    <div class="feature-content">
+                                        <h4>Early Safety Screening</h4>
+                                        <p>Rapidly identify potential bone‑toxic candidates to reduce R&D costs.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-chart-bar text-info"></i>
+                                    </div>
+                                    <div class="feature-content">
+                                        <h4>Mechanism Studies</h4>
+                                        <p>Leverage contributing features/substructures to hypothesize and verify mechanisms.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-flask text-success"></i>
+                                    </div>
+                                    <div class="feature-content">
+                                        <h4>Structure Optimization</h4>
+                                        <p>Use highlighted fragments to guide de‑risking modifications.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-shield-alt text-warning"></i>
+                                    </div>
+                                    <div class="feature-content">
+                                        <h4>Environmental Health</h4>
+                                        <p>In‑vitro prioritization for regulatory decision support.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 技术特色标签 -->
+                        <h3 class="section-title"><i class="fas fa-microscope text-primary"></i> Core Technical Highlights</h3>
+                        <div class="tech-stack">
+                            <span class="tech-tag">BTP-MFFGNN Multimodal Model</span>
+                            <span class="tech-tag"> multimodal feature fusion</span>
+                            <span class="tech-tag">Graph Neural Networks (GNN)</span>
+                            <span class="tech-tag">Attention Mechanism</span>
+                            <span class="tech-tag">drug development</span>
+                            <span class="tech-tag">Batch Prediction</span>
+                            <span class="tech-tag">Visualization</span>
+
+                              <!-- Osteotoxicity, drug development, multimodal feature fusion, graph neural networks, explainability -->
+                        </div>
+                    </div>
+
+                    <!-- 右侧固定卡片 -->
+                    <div class="content-right">
+                        <div class="right-card">
+                            <!-- 操作按钮 -->
+                            <div class="action-buttons mb-3">
+                                <a href="/predict" class="btn btn-primary btn-block mb-2">
+                                    <i class="fas fa-play"></i> Start Predicting
+                                </a>
+                                <a href="/help" class="btn btn-outline-primary btn-block">
+                                    <i class="fas fa-question-circle"></i> View Help
+                                </a>
+                            </div>
+
+                            <h4><i class="fas fa-star text-warning"></i> Key Features</h4>
+                            
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h6>Multimodal Prediction Engine (BTP-MFFGNN)</h6>
+                                    <p>Fingerprints + graph representations; attention and gated fusion for fine‑grained recognition. Acc: 0.85, AUC: 0.92.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h6>Visualized Results</h6>
+                                    <p>Return labels (toxic/non‑toxic) and probabilities, with molecule images for easy comparison.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h6>Batch Inference</h6>
+                                    <p>SMILES‑based batch prediction; one per line, up to 50 per run, with sample filler.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h6>Explainability</h6>
+                                    <p>LIME‑based local explanations highlight contributing features/substructures.</p>
+                                </div>
+                            </div>
+
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h6>Quick Start</h6>
+                                    <p>Experience OsteoToxPred now</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 修复依赖版本 -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="main-container">
+    <h1 class="text-center mb-5">
+        <i class="fas fa-question-circle text-primary"></i>
+        Help
+    </h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="content-card">
+                <h3 class="mb-4"><i class="fas fa-play-circle text-success"></i> How to Use</h3>
+                <div class="workflow-steps">
+                    <div class="workflow-step">
+                        <h5>1. Open Prediction Page</h5>
+                        <p>Go to OsteoToxPred Prediction and choose a model.</p>
+                    </div>
+                    <div class="workflow-step">
+                        <h5>2. Enter SMILES</h5>
+                        <p>Paste SMILES (one per line, ≤50), or click "Sample" to autofill examples.</p>
+                    </div>
+                    <div class="workflow-step">
+                        <h5>3. Submit</h5>
+                        <p>Within seconds you will get labels, probabilities and molecule images.</p>
+                    </div>
+                    <div class="workflow-step">
+                        <h5>4. Analyze Results</h5>
+                        <p>Review labels, probabilities, molecule images and overall statistics.</p>
+                    </div>           
+                </div>
+
+                <h3 class="mt-5 mb-4"><i class="fas fa-info-circle text-info"></i> About SMILES</h3>
+                <div class="alert alert-light border-left-info">
+                    <p><strong>SMILES</strong> (Simplified Molecular Input Line Entry System) is a line notation for molecules.</p>
+                    <p class="mb-2"><strong>Examples:</strong></p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="smiles-example">
+                                <code class="bg-light p-2 rounded d-block">C1CCCCC1</code>
+                                <small class="text-muted">Cyclohexane</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="smiles-example">
+                                <code class="bg-light p-2 rounded d-block">CC(=O)OC1=CC=CC=C1C(=O)O</code>
+                                <small class="text-muted">Aspirin</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="smiles-example">
+                                <code class="bg-light p-2 rounded d-block">CC(C)(C)OC(=O)N[C@@H](CC1=CC=CC=C1)C(=O)O</code>
+                                <small class="text-muted">Ibuprofen</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="mt-5 mb-4"><i class="fas fa-download text-warning"></i> Batch Prediction</h3>
+                <div class="alert alert-light border-left-warning">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success mr-2"></i>Batch input: one SMILES per line</li>
+                                <li><i class="fas fa-check text-success mr-2"></i>Up to 50 molecules per run</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success mr-2"></i>Use "Sample" to load demo data</li>
+                                <li><i class="fas fa-check text-success mr-2"></i>Invalid SMILES are detected and skipped</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="content-card">
+                <h4 class="mb-4"><i class="fas fa-exclamation-triangle text-warning"></i> Important Notes</h4>
+                
+                <div class="info-card mb-3">
+                    <div class="info-icon warning">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="info-content">
+                        <h6><strong>Performance</strong></h6>
+                        <p class="small mb-0">Metrics (Accuracy=0.85, AUC=0.92) are from our internal evaluation; real‑world performance depends on data distribution. External validation is recommended.</p>
+                    </div>
+                </div>
+                
+                <div class="info-card mb-3">
+                    <div class="info-icon info">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="info-content">
+                        <h6><strong>Disclaimer</strong></h6>
+                        <p class="small mb-0">For research only; not intended for clinical or regulatory decisions.</p>
+                    </div>
+                </div>
+                
+                <div class="info-card mb-3">
+                    <div class="info-icon success">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <div class="info-content">
+                        <h6><strong>Export</strong></h6>
+                        <p class="small mb-0">Results can be downloaded for analysis and archiving.</p>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon primary">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="info-content">
+                        <h6><strong>Support</strong></h6>
+                        <p class="small mb-0">For technical questions, contact our support team.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.border-left-info {
+    border-left: 4px solid #17a2b8 !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid #ffc107 !important;
+}
+
+.smiles-example {
+    text-align: center;
+    padding: 10px;
+}
+
+.smiles-example code {
+    font-size: 0.8rem;
+    word-break: break-all;
+    margin-bottom: 5px;
+}
+
+.info-card {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.info-icon.warning {
+    background: linear-gradient(135deg, #ffc107, #ff8c00);
+}
+
+.info-icon.info {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.info-icon.success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.info-icon.primary {
+    background: linear-gradient(135deg, #007bff, #6610f2);
+}
+
+.info-content h6 {
+    margin-bottom: 8px;
+    color: #495057;
+}
+
+.info-content p {
+    color: #6c757d;
+    line-height: 1.4;
+}
+</style>
+{% endblock %}

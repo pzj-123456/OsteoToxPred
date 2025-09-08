@@ -1,0 +1,666 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="main-container">
+    <div class="welcome-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h1>Prediction</h1>
+                <p class="subtitle">AI-based bone toxicity prediction powered by BTP-MFFGNN</p>
+            </div>
+            <a href="/" class="back-home-btn">
+                <i class="fas fa-home"></i>
+                Back to Home
+            </a>
+        </div>
+    </div>
+
+    <div class="prediction-container">
+        <form method="POST" action="/predict" id="prediction-form">
+            <!-- Algorithm selection and SMILES input -->
+            <div class="form-row">
+                <!-- 算法选择 -->
+                <div class="form-section algorithm-section">
+                    <div class="section-label">
+                        <span class="step-number">1</span>
+                        Choose Algorithm
+                    </div>
+                    <div class="algorithm-selection">
+                        <label for="algorithm">Algorithm:</label>
+                        <select class="custom-select" id="algorithm" name="algorithm">
+                            <option value="BTP-MFFGNN" selected>BTP-MFFGNN</option>
+                            <option value="SVM">SVM</option>
+                            <option value="RandomForest">RandomForest</option>
+                            <option value="XGBoost">XGBoost</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- SMILES input -->
+                <div class="form-section smiles-section">
+                    <div class="section-label">
+                        <span class="step-number">2</span>
+                        Enter SMILES
+                    </div>
+                    <div class="smiles-input-area">
+                        <label for="smiles">SMILES:</label>
+                        <textarea 
+                            class="form-control" 
+                            id="smiles" 
+                            name="smiles" 
+                            rows="12" 
+                            placeholder="Enter SMILES, one per line, up to 20 molecules&#10;Examples:&#10;CC(C)CC1=CC=C(C=C1)C(C)C(=O)O&#10;CC1=CC=C(C=C1)C2=CC=CC=C2&#10;CC(C)(C)C1=CC=C(C=C1)S(=O)(=O)N"
+                            oninput="console.log('textarea content changed:', this.value.length, 'characters')"
+                            onchange="console.log('textarea content changed:', this.value.length, 'characters')"
+                            style="min-height: 200px; max-height: 600px; overflow-y: auto;"></textarea>
+                        <div class="input-hint">
+                            <i class="fas fa-info-circle"></i>
+                            Please enter one SMILES per line, up to 50 molecules
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-section">
+                <div class="section-label">
+                    <span class="step-number">3</span>
+                    Run Prediction
+                </div>
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-secondary" id="example-btn" onclick="loadExampleData()">
+                        <i class="fas fa-lightbulb"></i>
+                        Sample Data
+                    </button>
+                    <button type="button" class="btn btn-warning" id="reset-btn" onclick="resetForm()">
+                        <i class="fas fa-undo"></i>
+                        Reset
+                    </button>
+                    <button type="button" class="btn btn-info" id="clear-cache-btn">
+                        <i class="fas fa-trash"></i>
+                        Clear Cache
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn" onclick="console.log('submit button onclick triggered'); forceSubmit(); return false;">
+                        <i class="fas fa-play"></i>
+                        Predict
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Error message -->
+        {% if error %}
+        <div class="error-section">
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ error }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Prediction result snippet -->
+        {% if prediction_result %}
+        <div class="result-section">
+            <h3><i class="fas fa-chart-bar"></i> Prediction Result</h3>
+            <div class="result-content">
+                {{ prediction_result | safe }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.prediction-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.form-row {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.form-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border-left: 4px solid #00b894;
+    border: 1px solid #eef2f7;
+}
+
+.algorithm-section {
+    flex: 0 0 300px;
+}
+
+.smiles-section {
+    flex: 1;
+}
+
+.section-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.step-number {
+    background: linear-gradient(135deg, #00b894, #00a085);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 12px;
+    font-size: 0.9rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    border: 1px solid rgba(0, 184, 148, .25);
+}
+
+.algorithm-selection {
+    display: grid;
+    grid-template-columns: 80px 1fr; /* left 80px label + right adaptive */
+    column-gap: 8px;
+    align-items: center;
+    width: 100%;
+}
+
+.algorithm-selection label {
+    font-weight: 500;
+    color: #2c3e50;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.algorithm-selection .custom-select {
+    width: 100%;
+    min-width: 0; /* key: allow adaptive in grid */
+    padding-right: 2.2rem; /* reserve space for right arrow */
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    background-color: white;
+}
+
+.algorithm-selection select:focus {
+    border-color: #00b894;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.1);
+}
+
+.smiles-input-area label {
+    display: block;
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.smiles-input-area textarea {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+    min-height: 200px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.smiles-input-area textarea:focus {
+    border-color: #00b894;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.1);
+}
+
+.input-hint {
+    margin-top: 10px;
+    padding: 10px 15px;
+    background: #f0fdf4;
+    border-radius: 6px;
+    color: #047857;
+    border: 1px solid #bbf7d0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.action-buttons .btn {
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    border: none;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c5ce7, #5f3dc4);
+    color: white;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #fdcb6e, #e17055);
+    color: white;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #00b894, #00a085);
+    color: white;
+}
+
+.result-section {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    margin-top: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #00b894;
+}
+
+.result-section h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.result-content {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e9ecef;
+}
+
+.error-section {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #e74c3c;
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #e74c3c;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.error-message i {
+    font-size: 1.2rem;
+}
+
+@media (max-width: 992px) {
+    .form-row {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .algorithm-section {
+        flex: none;
+    }
+    
+    .smiles-section {
+        flex: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .algorithm-selection {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        width: 100%;
+    }
+    
+    .algorithm-selection .custom-select {
+        width: 100%;
+        min-width: 0;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .prediction-container {
+        padding: 0 15px;
+    }
+}
+</style>
+
+    <script>
+// Check if jQuery is loaded
+function checkJQuery() {
+    if (typeof jQuery === 'undefined') {
+        console.error('jQuery not loaded!');
+        // Try to load jQuery manually
+        var script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js';
+        script.onload = function() {
+            console.log('jQuery manually loaded successfully');
+            // Re-check and execute initialization
+            setTimeout(checkJQuery, 100);
+        };
+        script.onerror = function() {
+            console.error('jQuery manual loading also failed');
+        };
+        document.head.appendChild(script);
+    } else {
+        console.log('jQuery loaded, version:', jQuery.fn.jquery);
+    }
+}
+
+// Check jQuery status immediately
+checkJQuery();
+
+// Simple test function
+function testButtonClick(buttonId) {
+    console.log('Test button click:', buttonId);
+    var button = document.getElementById(buttonId);
+    if (button) {
+        console.log('Found button:', buttonId);
+        return true;
+    } else {
+        console.log('Button not found:', buttonId);
+        return false;
+    }
+}
+
+// Inline function - Sample data
+function loadExampleData() {
+    console.log('loadExampleData function called');
+    var exampleSmiles = 
+`O=C1NC(c2ccccc2)(c2ccccc2)C(=O)N1COP(=O)(O)O
+CCOC(=O)C1=C(C)N=c2sc(=Cc3ccc[nH+]c3)c(=O)n2C1c1c(OC)ccc2ccc(OC)cc12
+CC(C)(C)NC(=O)C1CCC2C3CCC4NC(=O)C=CC4(C)C3CCC12C
+C=c1[nH]n(-c2ccc(C)c(C)c2)c(=O)c1=CNc1ccc(S(=O)(=O)[N-]c2ccc(C)cc2)cc1OC
+CC(Cl)C(=O)N(C)c1cc2ccc1CCc1ccc(cc1)CC2
+CCC1C(=O)OCC1Cc1cncn1C
+NC1C(O)OC(CO)C(O)C1O
+CCCCCCCCCCC(C(=O)OCC(COC(=O)C(CCCCCCCCCC)C(C)(C)C)OC(=O)C(CCCCCCCCCC)C(C)(C)C)C(C)(C)C
+`;
+    
+    var smilesTextarea = document.getElementById('smiles');
+    if (smilesTextarea) {
+        smilesTextarea.value = exampleSmiles;
+        console.log('Sample data set (inline function)');
+        
+        // Force trigger change and input events
+        var event = new Event('change', { bubbles: true });
+        smilesTextarea.dispatchEvent(event);
+        
+        var inputEvent = new Event('input', { bubbles: true });
+        smilesTextarea.dispatchEvent(inputEvent);
+        
+        console.log('change and input events triggered');
+    } else {
+        console.log('SMILES textarea not found (inline function)');
+    }
+}
+
+// Inline function - Reset form
+function resetForm() {
+    console.log('resetForm function called');
+    
+    var smilesTextarea = document.getElementById('smiles');
+    if (smilesTextarea) {
+        smilesTextarea.value = '';
+        console.log('SMILES cleared (inline function)');
+    }
+    
+    var algorithmSelect = document.getElementById('algorithm');
+    if (algorithmSelect) {
+        algorithmSelect.value = 'BTP-MFFGNN_model';
+        console.log('Algorithm reset to BTP-MFFGNN_model (inline function)');
+    }
+}
+
+// Force submit function
+function forceSubmit() {
+    console.log('forceSubmit function called');
+    
+    var form = document.getElementById('prediction-form');
+    var smilesTextarea = document.getElementById('smiles');
+    
+    if (!form) {
+        console.error('Form not found');
+        return;
+    }
+    
+    if (!smilesTextarea) {
+        console.error('Textarea not found');
+        return;
+    }
+    
+    console.log('Current textarea content length:', smilesTextarea.value.length);
+    console.log('Current textarea content:', smilesTextarea.value);
+    
+    // Ensure form data is up to date
+    var formData = new FormData(form);
+    console.log('FormData content:');
+    for (var pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+    }
+    
+    // Force submit
+    console.log('Preparing to submit form...');
+    form.submit();
+}
+
+// Execute after page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, starting button tests...');
+    testButtonClick('example-btn');
+    testButtonClick('reset-btn');
+    testButtonClick('clear-cache-btn');
+    testButtonClick('submit-btn');
+    
+    // If jQuery is available, use jQuery to bind events
+    if (typeof jQuery !== 'undefined') {
+        console.log('Using jQuery to bind events');
+        
+        // Sample data button
+        $('#example-btn').click(function() {
+            console.log('Sample data button clicked (jQuery)');
+            loadExampleData();
+        });
+
+        // Reset button
+        $('#reset-btn').click(function() {
+            console.log('Reset button clicked (jQuery)');
+            resetForm();
+        });
+
+        // Clear cache button
+        $('#clear-cache-btn').click(function() {
+            if (confirm('Clear all cache data? This will clear previous prediction results.')) {
+                // Disable button, show loading state
+                var btn = $(this);
+                btn.prop('disabled', true);
+                btn.html('<i class="fas fa-spinner fa-spin"></i> 清理中...');
+                
+                $.post('/clear_cache', function(response) {
+                        if (response.success) {
+                            alert('Cache cleared successfully!');
+                        location.reload();
+                    } else {
+                            alert('Failed to clear cache: ' + response.message);
+                        // Restore button state
+                        btn.prop('disabled', false);
+                            btn.html('<i class=\"fas fa-trash\"></i> Clear Cache');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.error('Clear cache request failed:', error);
+                        alert('Failed to clear cache. Please try again.');
+                                            // Restore button state
+                    btn.prop('disabled', false);
+                        btn.html('<i class=\"fas fa-trash\"></i> Clear Cache');
+                });
+            }
+        });
+
+        // Form validation and submission
+        $('#prediction-form').submit(function(e) {
+            console.log('DEBUG: Form submit event triggered');
+            
+            var smilesTextarea = document.getElementById('smiles');
+            var smiles = smilesTextarea ? smilesTextarea.value.trim() : '';
+            
+            // Remove all client-side validation, allow any input
+            console.log('DEBUG: Submitted SMILES content:', smiles);
+            console.log('DEBUG: SMILES line count:', smiles.split('\n').filter(line => line.trim() !== '').length);
+            console.log('DEBUG: Form action:', $('#prediction-form').attr('action'));
+            console.log('DEBUG: Form method:', $('#prediction-form').attr('method'));
+            
+            var submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Predicting...';
+                submitBtn.disabled = true;
+                console.log('DEBUG: Button state updated');
+            }
+            
+            console.log('DEBUG: Allow form submission');
+            return true;
+        });
+        
+        // Force submit button click event
+        $('#submit-btn').click(function(e) {
+            console.log('DEBUG: Submit button clicked');
+            var form = document.getElementById('prediction-form');
+            if (form) {
+                console.log('DEBUG: Form found, preparing to submit');
+                // Ensure form data is up to date
+                var smilesTextarea = document.getElementById('smiles');
+                if (smilesTextarea) {
+                    console.log('DEBUG: Current textarea content length:', smilesTextarea.value.length);
+                }
+                return true; // Allow default behavior
+            } else {
+                console.log('DEBUG: Form not found');
+                e.preventDefault();
+                return false;
+            }
+        });
+    } else {
+        console.log('jQuery not available, using native JavaScript');
+        
+        // Use native JavaScript to bind events
+        var exampleBtn = document.getElementById('example-btn');
+        if (exampleBtn) {
+            exampleBtn.addEventListener('click', function() {
+                console.log('Sample data button clicked (native JS)');
+                loadExampleData();
+            });
+        }
+
+        var resetBtn = document.getElementById('reset-btn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function() {
+                console.log('Reset button clicked (native JS)');
+                resetForm();
+            });
+        }
+
+        var clearCacheBtn = document.getElementById('clear-cache-btn');
+        if (clearCacheBtn) {
+            clearCacheBtn.addEventListener('click', function() {
+                if (confirm('Clear all cache? This will remove previous prediction results.')) {
+                    alert('jQuery not available. Please refresh the page.');
+                }
+            });
+        }
+
+        var predictionForm = document.getElementById('prediction-form');
+        if (predictionForm) {
+            predictionForm.addEventListener('submit', function(e) {
+                console.log('DEBUG: Native JS form submit event triggered');
+                
+                var smilesTextarea = document.getElementById('smiles');
+                var smiles = smilesTextarea ? smilesTextarea.value.trim() : '';
+                
+                // Remove all client-side validation, allow any input
+                console.log('DEBUG: Submitted SMILES content:', smiles);
+                console.log('DEBUG: SMILES line count:', smiles.split('\n').filter(line => line.trim() !== '').length);
+                console.log('DEBUG: Form action:', predictionForm.action);
+                console.log('DEBUG: Form method:', predictionForm.method);
+                
+                var submitBtn = document.getElementById('submit-btn');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Predicting...';
+                    submitBtn.disabled = true;
+                    console.log('DEBUG: Button state updated');
+                }
+                
+                console.log('DEBUG: Allow form submission');
+                return true;
+            });
+        }
+        
+        // Native JS submit button click event
+        var submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', function(e) {
+                console.log('DEBUG: Native JS submit button clicked');
+                var form = document.getElementById('prediction-form');
+                if (form) {
+                    console.log('DEBUG: Form found, preparing to submit');
+                    // Ensure form data is up to date
+                    var smilesTextarea = document.getElementById('smiles');
+                    if (smilesTextarea) {
+                        console.log('DEBUG: Current textarea content length:', smilesTextarea.value.length);
+                    }
+                    return true; // Allow default behavior
+                } else {
+                    console.log('DEBUG: Form not found');
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

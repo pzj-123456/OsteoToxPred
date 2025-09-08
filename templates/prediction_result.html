@@ -1,0 +1,1131 @@
+{% extends "index.html" %}
+
+{% block content %}
+<style>
+/* Basic layout */
+body {
+    font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    background: #f5f7fa;
+}
+
+/* Main container */
+.main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* Title area */
+.welcome-header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 32px 20px;
+    background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+    border-radius: 12px;
+    color: #fff;
+}
+
+.header-title h1 {
+    font-size: 2.4rem;
+    margin: 0 0 8px;
+}
+
+.header-title .subtitle {
+    font-size: 1.2rem;
+    opacity: .9;
+}
+
+/* Buttons */
+.back-home-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    color: #fff;
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 24px;
+    text-decoration: none;
+    transition: all .3s;
+    font-size: .9rem;
+}
+.back-home-btn:hover {
+    background: rgba(255,255,255,.3);
+    transform: translateY(-2px);
+}
+
+/* Result cards */
+.result-section {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px 20px;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.06);
+}
+.result-section h3 {
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Table */
+.table-container { overflow-x: auto; }
+.result-table, .invalid-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+.result-table th, .result-table td,
+.invalid-table th, .invalid-table td {
+    padding: 10px 12px;
+    text-align: center;
+    border-bottom: 1px solid #e9ecef;
+    font-size: .9rem;
+}
+.result-table th {background:#00b894;color:#fff;font-weight:600;}
+.invalid-table th {background:#f39c12;color:#fff;font-weight:600;}
+.result-table th, .invalid-table th {
+    padding: 14px 12px;
+    text-align: center;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Adjust SMILES column width */
+.smiles-cell {
+    min-width: 200px;
+    max-width: 400px;
+}
+
+/* SMILES */
+.smiles-container,.invalid-smiles-container{
+    background:#ffe6e6;
+    border:1px solid #ffb3b3;
+    border-radius:4px;
+    padding:8px 10px;
+    font-family:"Courier New",monospace;
+    font-size:.85rem;
+    max-height:60px;
+    overflow-y:auto;
+    word-break:break-all;
+    white-space:pre-wrap;
+}
+
+/* Molecule and attention images */
+.molecule-image,.attention-image{
+    width:100px;height:100px;
+    border:1px solid #e0e0e0;
+    border-radius:6px;
+    object-fit:contain;
+    background:#fff;
+}
+
+/* Probability */
+.toxic-prob{background:#ffe6e6;color:#d63031;border:1px solid #ffb3b3;border-radius:4px;padding:6px 10px;font-size:.85rem;display:inline-block;min-width:60px;}
+.safe-prob{background:#e6ffe6;color:#00b894;border:1px solid #b3ffb3;border-radius:4px;padding:6px 10px;font-size:.85rem;display:inline-block;min-width:60px;}
+
+/* Badges */
+.toxic-badge{background:#e74c3c;color:#fff;border-radius:18px;padding:6px 14px;font-size:.8rem;text-transform:uppercase;}
+.safe-badge{background:#00b894;color:#fff;border-radius:18px;padding:6px 14px;font-size:.8rem;text-transform:uppercase;}
+
+/* Error messages */
+.error-message{background:#ffe6e6;color:#d63031;border:1px solid #ffb3b3;border-radius:4px;padding:6px 8px;font-size:.8rem;display:inline-block;max-width:200px;word-wrap:break-word;}
+
+/* Statistics cards */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;}
+.stat-card{display:flex;align-items:center;gap:12px;background:#f9fafa;padding:18px;border-radius:10px;border:1px solid #e9ecef;}
+.stat-icon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;}
+.stat-icon.toxic{background:#e74c3c;}
+.stat-icon.safe{background:#00b894;}
+.stat-icon.invalid{background:#f39c12;}
+.stat-number{font-size:1.4rem;font-weight:700;}
+.stat-label{font-size:.85rem;color:#555;}
+
+/* Responsive */
+@media(max-width:768px){
+    .smiles-container,.invalid-smiles-container{font-size:.75rem;padding:6px 8px;}
+    .toxic-prob,.safe-prob{font-size:.75rem;padding:4px 8px;min-width:50px;}
+    .toxic-badge,.safe-badge{padding:4px 10px;font-size:.75rem;}
+    .molecule-image,.attention-image{width:80px;height:80px;}
+}
+</style>
+<div class="main-container">
+    <div class="welcome-header">
+        <div class="header-content">
+            <div class="header-title">
+                {% if has_error %}
+                <h1>Prediction Error</h1>
+                <p class="subtitle">Please check your input and try again</p>
+                {% else %}
+                <h1>Prediction Results</h1>
+                <p class="subtitle">Bone toxicity predictions using <span class="model-name">{{ model_name }}</span></p>
+                {% endif %}
+            </div>
+            <div class="header-actions">
+                <a href="/predict" class="back-home-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    {% if has_error %}Edit Input{% else %}Predict Again{% endif %}
+                </a>
+                <a href="/" class="back-home-btn">
+                    <i class="fas fa-home"></i>
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="result-container">
+        {% if has_error %}
+        <!-- Error message -->
+        <div class="error-section">
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ error }}
+            </div>
+            <div class="error-actions">
+                <a href="/predict" class="btn btn-primary">
+                    <i class="fas fa-edit"></i>
+                    Edit Input
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <!-- Model info -->
+        <div class="result-section">
+            <h3><i class="fas fa-cog"></i> Model Info</h3>
+            <div class="model-info">
+                <div class="info-item">
+                    <span class="label">Model:</span>
+                    <span class="value">{{ model_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Predicted at:</span>
+                    <span class="value">{{ prediction_time }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Molecules:</span>
+                    <span class="value">{{ molecule_count }}</span>
+                </div>
+            </div>
+        </div>
+
+                    <!-- Prediction results table -->
+        <div class="result-section">
+            <h3><i class="fas fa-chart-bar"></i> Prediction Results</h3>
+            <div class="table-container">
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>SMILES</th>
+                            <th>Molecular Structure</th>
+                            <th>Attention Visualization</th>
+                            <th>Toxic Probability</th>
+                            <th>Non‑toxic Probability</th>
+                            <th>Predicted Class</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in prediction_results %}
+                        <tr>
+                            <td class="index-cell">{{ loop.index }}</td>
+                            <td class="smiles-cell">
+                                <div class="smiles-container">{{ result.smiles }}</div>
+                            </td>
+                            <td class="structure-cell">
+                                <img src="{{ result.structure_image }}" alt="Molecular Structure" class="molecule-image" onclick="openImageModal(this.src, '{{ result.smiles }}')">
+                            </td>
+                            <td class="attention-cell">
+                                {% if result.attention_visualization %}
+                                    <div class="attention-visualization">
+                                        <div class="attention-row">
+                                            <div class="attention-molecule">
+                                                <img src="{{ result.attention_visualization.molecule_image }}" alt="Attention-colored Molecule" class="attention-image" onclick="openImageModal(this.src, '{{ result.smiles }} - Attention')">
+                                                <div class="attention-label">Molecule</div>
+                                            </div>
+                                            <div class="attention-heatmap">
+                                                <img src="{{ result.attention_visualization.heatmap_image }}" alt="Attention Heatmap" class="attention-image" onclick="openImageModal(this.src, '{{ result.smiles }} - Heatmap')">
+                                                <div class="attention-label">Heatmap</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="no-attention">
+                                        <span class="no-data">No attention data</span>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td class="toxic-prob-cell">
+                                <span class="toxic-prob">{{ "%.3f"|format(result.prediction_value) }}</span>
+                            </td>
+                            <td class="safe-prob-cell">
+                                <span class="safe-prob">{{ "%.3f"|format(result.non_toxic_probability) }}</span>
+                            </td>
+                            <td class="prediction-cell">
+                                {% if result.is_toxic %}
+                                <span class="toxic-badge">Toxic</span>
+                                {% else %}
+                                <span class="safe-badge">Non‑toxic</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+                    <!-- Statistics -->
+        <div class="result-section">
+            <h3><i class="fas fa-chart-pie"></i> Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ total_input_molecules }}</div>
+                        <div class="stat-label">Total Input Molecules</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ valid_molecules_count }}</div>
+                        <div class="stat-label">Valid Molecules</div>
+                    </div>
+                </div>
+                {% if invalid_molecules %}
+                <div class="stat-card">
+                    <div class="stat-icon invalid">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ invalid_molecules|length }}</div>
+                        <div class="stat-label">Invalid Molecules</div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="stat-card">
+                    <div class="stat-icon toxic">
+                        <i class="fas fa-skull-crossbones"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ toxic_count }}</div>
+                        <div class="stat-label">Toxic Molecules</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon safe">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ safe_count }}</div>
+                        <div class="stat-label">Non‑toxic Molecules</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ "%.1f"|format(toxic_percentage) }}%</div>
+                        <div class="stat-label">Toxicity Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                    <!-- Download results
+        <div class="result-section">
+            <h3><i class="fas fa-download"></i> 下载结果</h3>
+            <div class="download-options">
+                <a href="/download_csv" class="download-btn">
+                    <i class="fas fa-file-csv"></i>
+                    下载CSV文件
+                </a>
+                <button type="button" class="cleanup-btn" id="cleanup-images-btn">
+                    <i class="fas fa-broom"></i>
+                    清理临时图片
+                </button>
+            </div>
+        </div> -->
+                 {% endif %}
+        <!-- Invalid molecules -->
+        {% if invalid_molecules %}
+        <div class="result-section">
+            <h3><i class="fas fa-exclamation-triangle"></i> Invalid Molecules</h3>
+            <div class="invalid-molecules-info">
+                <div class="info-summary">
+                    <p>Among the <strong>{{ total_input_molecules }}</strong> input molecules, <strong>{{ invalid_molecules|length }}</strong> invalid entries were detected and skipped.</p>
+                </div>
+                <div class="invalid-molecules-table">
+                    <table class="invalid-table">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>SMILES</th>
+                                <th>Error Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invalid_mol in invalid_molecules %}
+                            <tr>
+                                <td class="index-cell">{{ loop.index }}</td>
+                                <td class="smiles-cell">
+                                    <div class="invalid-smiles-container">{{ invalid_mol.smiles }}</div>
+                                </td>
+                                <td class="error-cell">
+                                    <span class="error-message">{{ invalid_mol.error_message }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+     </div>
+ </div>
+
+            <!-- Image zoom modal -->
+<div id="imageModal" class="image-modal">
+     <div class="modal-content">
+         <span class="close-modal">&times;</span>
+         <div class="modal-header">
+              <h4>Molecular Structure</h4>
+             <p class="smiles-text" id="modalSmiles"></p>
+         </div>
+         <div class="modal-body">
+              <img id="modalImage" src="" alt="Molecular Structure" class="modal-molecule-image">
+             <div class="modal-actions">
+                 <button type="button" class="download-image-btn" onclick="downloadImage()">
+                     <i class="fas fa-download"></i>
+                      Download Image
+                 </button>
+             </div>
+         </div>
+     </div>
+ </div>
+
+<style>
+.result-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.error-section {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #e74c3c;
+    text-align: center;
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #e74c3c;
+    font-weight: 500;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+
+.error-message i {
+    font-size: 1.5rem;
+}
+
+.error-actions {
+    margin-top: 20px;
+}
+
+.error-actions .btn {
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    border: none;
+    background: linear-gradient(135deg, #00b894, #00a085);
+    color: white;
+    text-decoration: none;
+}
+
+.error-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.result-section {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #00b894;
+}
+
+.result-section h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.model-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.info-item .label {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.info-item .value {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.table-container {
+    overflow-x: auto;
+    margin: 0 -10px; /* Reserve space for scrollbar */
+}
+
+.result-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.result-table th, .result-table td {
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.result-table th {
+    background: #00b894;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+}
+
+.result-table td {
+    background: #f9f9f9;
+    font-size: 0.95rem;
+}
+
+.result-table tr:hover {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.result-table tr:last-child td {
+    border-bottom: none;
+}
+
+.smiles-cell {
+    min-width: 200px;
+    max-width: 400px;
+}
+
+.smiles-cell .smiles-container {
+    background: #ffe6e6;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    word-break: break-all;
+    white-space: pre-wrap;
+    display: block;
+    max-height: 80px;
+    overflow-y: auto;
+    line-height: 1.5;
+    border: 2px solid #ffb3b3;
+    color: #d63031;
+    font-weight: 500;
+}
+
+.smiles-cell .smiles-container:hover {
+    border-color: #ff8080;
+    box-shadow: 0 2px 8px rgba(255, 128, 128, 0.2);
+}
+
+.structure-cell {
+    text-align: center;
+}
+
+.molecule-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    object-fit: contain;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: white;
+}
+
+.molecule-image:hover {
+    transform: scale(1.05);
+    border-color: #00b894;
+    box-shadow: 0 4px 8px rgba(0,184,148,0.2);
+}
+
+.index-cell {
+    text-align: center;
+    font-weight: 600;
+    color: #495057;
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 8px 12px;
+    min-width: 40px;
+}
+
+.toxic-prob-cell {
+    text-align: center;
+}
+
+.toxic-prob {
+    font-weight: 600;
+    color: #d63031;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    background: #ffe6e6;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 2px solid #ffb3b3;
+    display: inline-block;
+    min-width: 70px;
+    text-align: center;
+}
+
+.safe-prob-cell {
+    text-align: center;
+}
+
+.safe-prob {
+    font-weight: 600;
+    color: #00b894;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    background: #e6ffe6;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 2px solid #b3ffb3;
+    display: inline-block;
+    min-width: 70px;
+    text-align: center;
+}
+
+.prediction-value {
+    font-weight: 600;
+    color: #2c3e50;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.toxic-badge {
+    background: #e74c3c;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-block;
+    text-align: center;
+    min-width: 80px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.safe-badge {
+    background: #00b894;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-block;
+    text-align: center;
+    min-width: 80px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.prediction-cell {
+    text-align: center;
+}
+
+.confidence-cell {
+    text-align: center;
+}
+
+.confidence-bar {
+    width: 80px;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0 auto 5px auto;
+}
+
+.confidence-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00b894, #00a085);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.confidence-text {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 15px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-color: #00b894;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    color: white;
+    background: #00b894;
+    box-shadow: 0 4px 15px rgba(0,184,148,0.3);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0,184,148,0.4);
+}
+
+.stat-icon.toxic {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.stat-icon.safe {
+    background: linear-gradient(135deg, #00b894, #00a085);
+}
+
+.stat-icon.invalid {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.stat-label {
+    font-size: 0.95rem;
+    color: #495057;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.download-options {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #6c5ce7, #5f3dc4);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.cleanup-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.cleanup-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.cleanup-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Image modal styles */
+.image-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s ease;
+    overflow: hidden;
+}
+
+.close-modal {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 1000;
+    transition: color 0.3s ease;
+}
+
+.close-modal:hover {
+    color: #e74c3c;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #00b894, #00a085);
+    color: white;
+    padding: 25px 30px;
+    text-align: center;
+}
+
+.modal-header h4 {
+    margin: 0 0 10px 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.smiles-text {
+    margin: 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    word-break: break-all;
+}
+
+.modal-body {
+    padding: 30px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.modal-molecule-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.modal-actions {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.download-image-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: #00b894;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,184,148,0.3);
+}
+
+.download-image-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,184,148,0.4);
+    background: #00a085;
+}
+
+.download-image-btn:active {
+    transform: translateY(0);
+}
+
+/* Animation effects */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .table-container {
+        margin: 0 -15px;
+    }
+    
+    .result-table {
+        min-width: 800px;
+        font-size: 0.9rem;
+    }
+    
+    .result-table th,
+    .result-table td {
+        padding: 10px 8px;
+    }
+    
+    .smiles-cell .smiles-container {
+        font-size: 0.75rem;
+        padding: 6px 8px;
+    }
+    
+    .molecule-image {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+    
+    .modal-header {
+        padding: 20px 25px;
+    }
+    
+    .modal-body {
+        padding: 25px 20px;
+    }
+    
+    .download-image-btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<script>
+    // Open image modal function
+function openImageModal(imageSrc, smiles) {
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalSmiles = document.getElementById('modalSmiles');
+    
+    modalImage.src = imageSrc;
+    modalSmiles.textContent = smiles;
+    modal.style.display = "block";
+}
+
+    // Download image function (use Blob to force filename as SMILES)
+async function downloadImage() {
+    const modalImage = document.getElementById('modalImage');
+    const modalSmiles = document.getElementById('modalSmiles');
+    
+    try {
+        const imageUrl = modalImage.src;
+        const smilesText = modalSmiles.textContent || 'molecule';
+        // Safe filename: keep common characters in SMILES, convert others to underscore
+        const safeName = smilesText.replace(/[^a-zA-Z0-9()=#@+\-\.\[\]\/]/g, '_');
+        const fileName = `${safeName}.png`;
+
+        // Convert to relative path to avoid download name being overwritten by different domains
+        let fetchUrl = imageUrl;
+        try {
+            const u = new URL(imageUrl, window.location.origin);
+            fetchUrl = u.pathname + u.search;
+        } catch (_) {
+            // Not absolute URL, keep as is
+        }
+
+        // Fetch as Blob, use object URL to trigger download, browser will use our set download name
+        const resp = await fetch(fetchUrl, { credentials: 'same-origin' });
+        const blob = await resp.blob();
+        const objUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = objUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(objUrl);
+    } catch (error) {
+        console.error('Error downloading image:', error);
+        alert('Download failed, please try again');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Image modal functionality
+    const modal = document.getElementById('imageModal');
+    const closeModal = document.querySelector('.close-modal');
+    
+            // Close modal
+    closeModal.onclick = function() {
+        modal.style.display = "none";
+    }
+    
+            // Click outside modal to close
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+    
+    // Clean up images button functionality
+    const cleanupBtn = document.getElementById('cleanup-images-btn');
+    if (cleanupBtn) {
+        cleanupBtn.addEventListener('click', function() {
+            if (confirm('Delete all temporary images? This will remove generated molecular images but will not affect prediction results.')) {
+                // Disable button, show loading state
+                cleanupBtn.disabled = true;
+                cleanupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cleaning...';
+                
+                // Send cleanup request
+                fetch('/cleanup_images', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Temporary images cleaned successfully!');
+                        // Refresh page to show updated status
+                        location.reload();
+                    } else {
+                        alert('Cleanup failed: ' + data.message);
+                                        // Restore button state
+                cleanupBtn.disabled = false;
+                cleanupBtn.innerHTML = '<i class="fas fa-broom"></i> Clean Temporary Images';
+                    }
+                })
+                .catch(error => {
+                    console.error('Cleanup images failed:', error);
+                    alert('Cleanup failed, please try again');
+                                    // Restore button state
+                cleanupBtn.disabled = false;
+                cleanupBtn.innerHTML = '<i class="fas fa-broom"></i> Clean Temporary Images';
+                });
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}
