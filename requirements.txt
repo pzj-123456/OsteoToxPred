@@ -1,22 +1,12 @@
-# Base dependencies
-numpy>=2.3.2
-pandas>=2.3.2
-matplotlib>=3.10.6
-scikit-learn>=1.7.1
-xgboost==2.1.4
-flask==3.1.2
+Flask==3.1.1
 Flask-Session==0.8.0
 redis==6.4.0
-gunicorn==23.0.0
-PyYAML==6.0.2
 
-# PyTorch (CPU version, ensure installed first)
-torch==2.7.1  # Use precompiled CPU version, adjust if needed
+PyYAML==6.0.1
+numpy==1.26.4
+pandas==1.3.5
+matplotlib==3.5.3
 
-# PyTorch Geometric (PyG) - Install after torch
-torch-scatter==2.1.0  # Precompiled for torch 2.7.1
-torch-sparse==0.6.17  # Precompiled for torch 2.7.1
-torch-geometric==2.5.2  # Precompiled, CPU-compatible
-
-# Chemistry toolkit
-rdkit==2023.9.6  # Stable precompiled wheel
+# ML stack
+scikit-learn==1.0.2
+xgboost==2.1.4
