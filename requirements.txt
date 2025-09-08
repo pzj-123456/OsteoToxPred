@@ -26,4 +26,4 @@ xgboost==2.1.4
 # torch-geometric==2.6.1
 
 # Chemistry toolkit - Install via build command or precompiled
-rdkit-pypi==2024.3.5  # 预编译版，避免源码编译失败
+rdkit==2024.3.5 
