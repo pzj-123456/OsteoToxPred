@@ -4,9 +4,18 @@ redis==6.4.0
 
 PyYAML==6.0.1
 numpy==1.26.4
-pandas==1.3.5
+pandas==2.0.3  # 升级以匹配 sklearn 1.5.1，避免 numpy 冲突
 matplotlib==3.5.3
 
 # ML stack
-scikit-learn==1.0.2
+scikit-learn==1.5.1  # 升级到最新，修复 Cython 兼容性
 xgboost==2.1.4
+
+# PyTorch + PyG - Install via build command, not here
+# torch==2.4.1
+# torch-scatter==2.1.2
+# torch-sparse==0.6.18
+# torch-geometric==2.6.1
+
+# Chemistry toolkit - Install via build command or precompiled
+# rdkit==2024.3.5
