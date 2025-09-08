@@ -1,3 +1,22 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ad795a7534c44da06345f041bf57f704d7ab9cd288cd6c0355714904c8aed337
-size 623
+# Base dependencies
+numpy>=2.3.2
+pandas>=2.3.2
+matplotlib>=3.10.6
+scikit-learn>=1.7.1
+xgboost==2.1.4
+flask==3.1.2
+Flask-Session==0.8.0
+redis==6.4.0
+gunicorn==23.0.0
+PyYAML==6.0.2
+
+# PyTorch (CPU version, ensure installed first)
+torch==2.7.1+cpu  # Use precompiled CPU version, adjust if needed
+
+# PyTorch Geometric (PyG) - Install after torch
+torch-scatter==2.1.0+cpu  # Precompiled for torch 2.7.1
+torch-sparse==0.6.17+cpu  # Precompiled for torch 2.7.1
+torch-geometric==2.5.2  # Precompiled, CPU-compatible
+
+# Chemistry toolkit
+rdkit==2023.9.6  # Stable precompiled wheel
