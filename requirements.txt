@@ -1,7 +1,9 @@
 Flask==3.1.1
 Werkzeug==3.0.1  # Flask 核心依赖
 Click==8.1.7  # Flask CLI 依赖
-Blinker==1.8.2  # Flask signals 依赖 (修复当前错误)
+Blinker==1.8.2  # Flask signals 依赖 
+itsdangerous==3.0.0  # Flask sessions (修复当前错误)
+Jinja2==3.1.4  # Flask templates (预防下一个错误)
 Flask-Session==0.8.0
 redis==6.4.0
 gunicorn==21.2.0
@@ -24,4 +26,4 @@ xgboost==2.1.4
 # torch-geometric==2.6.1
 
 # Chemistry toolkit - Install via build command or precompiled
-rdkit==2024.3.5
+rdkit-pypi==2024.3.5  # 预编译版，避免源码编译失败
