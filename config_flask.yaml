@@ -1,0 +1,32 @@
+batch_size: 32
+gpu: cpu  # Flask应用默认使用CPU，避免GPU内存问题
+task_name: test
+
+model: 
+  num_layer: 5
+  emb_dim: 300
+  feat_dim: 512
+  drop_ratio: 0.1
+  pool: mean
+  ecfp_bits: 2048
+  maccs_bits: 167
+  ap_bits: 2048
+  ext_bits: 2048
+  torsion_bits: 2048
+  avalon_bits: 1024
+  fp_hidden_dim: 512
+
+dataset:
+  num_workers: 0  # Flask中设为0避免多进程问题
+  valid_size: 0.0
+  test_size: 1.0
+  splitting: random
+  fingerprint_list: ['ecfp', 'maccs', 'ap', 'ext', 'torsion', 'avalon']
+  ecfp_bits: 2048
+  maccs_bits: 167
+  ap_bits: 2048
+  ext_bits: 2048
+  torsion_bits: 2048
+  avalon_bits: 1024
+  fp_radius: 2
+  extfp_maxPath: 5
