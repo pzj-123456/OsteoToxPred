@@ -29,7 +29,8 @@ pandas==2.0.3
 matplotlib==3.5.3
 
 # ML stack
-scikit-learn==1.5.1
+scikit-learn==1.0.2
+#scikit-learn==1.5.1
 xgboost==2.1.4
 
 # PyTorch + PyG - Install via build command, not here
